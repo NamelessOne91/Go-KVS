@@ -17,13 +17,13 @@ func TestStore(t *testing.T) {
 	Put("2", "2")
 	Put("3", "3")
 
-	if len(store) != 3 {
-		t.Errorf("Expected store to contains 3 elements - got %d", len(store))
+	if len(store.m) != 3 {
+		t.Errorf("Expected store to contains 3 elements - got %d", len(store.m))
 	}
 
 	Put("1", "0")
-	if len(store) != 3 {
-		t.Errorf("Expected store to contains 3 elements - got %d", len(store))
+	if len(store.m) != 3 {
+		t.Errorf("Expected store to contains 3 elements - got %d", len(store.m))
 	}
 	v, err := Get("1")
 	if err != nil || v != "0" {
