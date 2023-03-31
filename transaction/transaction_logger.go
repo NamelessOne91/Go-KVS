@@ -43,7 +43,8 @@ func (l *FileTransactionLogger) Err() <-chan error {
 	return l.errors
 }
 
-// Run inits the FileTranstactionLogger and starts to concurrently process events
+// Run inits the FileTranstactionLogger channels
+// and starts to concurrently process new events
 func (l *FileTransactionLogger) Run() {
 	// init channels
 	events := make(chan Event, 16) // give I/O some buffer
@@ -70,6 +71,9 @@ func (l *FileTransactionLogger) Run() {
 	}()
 }
 
+// ReadEvents reads the provided transaction file and parses each line
+// to create and send the corresponding Event it represents, or errors,
+// on the channels it returns
 func (l *FileTransactionLogger) ReadEvents() (<-chan Event, <-chan error) {
 	scanner := bufio.NewScanner(l.file)
 	outEvent := make(chan Event)
@@ -108,6 +112,9 @@ func (l *FileTransactionLogger) ReadEvents() (<-chan Event, <-chan error) {
 	return outEvent, outError
 }
 
+// InitTransactionLogger creates a new FileTransactionLogger,
+// process previously logged events to reproduce the last store state
+// and starts processing new events
 func InitTransactionLogger() error {
 	var err error
 
@@ -137,6 +144,8 @@ func InitTransactionLogger() error {
 	return err
 }
 
+// newFileTransactionLogger creates and returns a TransactionLogger
+// writing in append-only mode to the file at the specified path
 func newFileTransactionLogger(filename string) (TransactionLogger, error) {
 	// read-write mode, append. create file if doesn't exist
 	file, err := os.OpenFile(filename, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0755)
