@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"errors"
 	"io"
 	"net/http"
 
 	"github.com/NamelessOne91/Go-KVS/store"
+	"github.com/NamelessOne91/Go-KVS/transaction"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -15,8 +17,13 @@ func KeyValuePutHandler(w http.ResponseWriter, r *http.Request) {
 
 	value, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
+
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError) // 500
+		status := http.StatusInternalServerError // 500
+		if errors.Is(err, &http.MaxBytesError{}) {
+			status = http.StatusRequestEntityTooLarge // 413
+		}
+		http.Error(w, err.Error(), status)
 		return
 	}
 
@@ -26,6 +33,7 @@ func KeyValuePutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	transaction.Logger.WritePut(key, string(value))
 	// HTTP 201
 	w.WriteHeader(http.StatusCreated)
 }
