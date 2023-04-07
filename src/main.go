@@ -66,7 +66,7 @@ func main() {
 	}()
 
 	// Run the server
-	err := server.ListenAndServe()
+	err := server.ListenAndServeTLS("cert.pem", "key.pem")
 	if err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
