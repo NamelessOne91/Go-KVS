@@ -1,29 +1,23 @@
 ##
-## STEP 1 - BUILD
+## STEP 1 - Compile binaries
 ##
 
 FROM golang:1.20.2-alpine3.17 AS build
 
-WORKDIR /app
+COPY . /app
 
-COPY go.mod ./
-COPY go.sum ./
+WORKDIR /app/src
 
-RUN go mod download
-
-COPY . .
-
-RUN go build -o /go-kvs
+RUN CGO_ENABLED=0 GOOS=linux go build -o go-kvs
 
 ##
-## STEP 2 - DEPLOY
+## STEP 2 - Build image
 ##
 
 FROM scratch
 
-WORKDIR /
-
-COPY --from=build /go-kvs /go-kvs
+COPY --from=build /app/src/go-kvs .
+COPY --from=build /app/*.pem .
 
 EXPOSE 8080
 
